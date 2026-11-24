@@ -4,6 +4,14 @@ import type { Store, Task } from '../types'
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
 const key = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
 
+// Supabase がURLのハッシュを消費する前に、メールリンク由来の情報を拾っておく
+const hash = new URLSearchParams(location.hash.slice(1))
+/** パスワード再設定メールのリンクから開かれたか */
+export const openedFromRecovery = hash.get('type') === 'recovery'
+/** メールリンクが期限切れなどで失敗したときのメッセージ */
+export const authLinkError = hash.get('error_description')?.replace(/\+/g, ' ') ?? null
+if (authLinkError) history.replaceState(null, '', location.pathname + location.search)
+
 export const supabase: SupabaseClient | null = url && key ? createClient(url, key) : null
 
 const COLS = 'id,date,title,time,note,done,done_at,list_order,time_order,created_at'
