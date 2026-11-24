@@ -38,14 +38,14 @@ export function CalendarView({ store, selected, onPick }: Props) {
   return (
     <section className="calendar">
       <div className="cal-head">
-        <button className="ghost" onClick={() => shift(-1)} aria-label="前の月">
-          ‹
+        <button className="icon-btn" onClick={() => shift(-1)} aria-label="前の月">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </button>
         <h2>
           {first.getFullYear()}年{first.getMonth() + 1}月
         </h2>
-        <button className="ghost" onClick={() => shift(1)} aria-label="次の月">
-          ›
+        <button className="icon-btn" onClick={() => shift(1)} aria-label="次の月">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </button>
       </div>
       <div className="cal-grid">
@@ -64,6 +64,7 @@ export function CalendarView({ store, selected, onPick }: Props) {
               <span className="cal-num">{Number(d.slice(8))}</span>
               {s && (
                 <span className={`cal-stat ${state}`}>
+                  <span className="cal-bar"><span style={{ width: `${(s.done / s.total) * 100}%` }} /></span>
                   {s.done}/{s.total}
                 </span>
               )}

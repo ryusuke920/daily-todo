@@ -45,7 +45,7 @@ export function Login({ sb }: { sb: SupabaseClient }) {
         <button className="primary" disabled={busy}>
           {mode === 'in' ? 'ログイン' : '登録する'}
         </button>
-        <button type="button" className="ghost small" onClick={() => setMode(mode === 'in' ? 'up' : 'in')}>
+        <button type="button" className="text-btn" onClick={() => setMode(mode === 'in' ? 'up' : 'in')}>
           {mode === 'in' ? 'アカウントを作成する' : 'ログインに戻る'}
         </button>
       </form>

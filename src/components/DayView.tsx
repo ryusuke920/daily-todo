@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { addDays, formatJP, isOverdue, nowHM, toDateStr, todayStr } from '../date'
+import { addDays, isOverdue, nowHM, toDateStr, todayStr, weekday } from '../date'
 import { buildSuggestions, type Suggestion } from '../history'
 import { byOrder, byTime, newOrders, reorderUpdates, type OrderField, type OrderUpdate } from '../order'
 import type { Store, Task, TaskPatch } from '../types'
@@ -191,7 +191,9 @@ export function DayView({ store, onSignOut }: { store: Store; onSignOut?: () => 
       index: idx,
       node: (
         <li key="now-line" className="now-line" aria-label={`現在 ${hm}`}>
-          <span>現在 {hm}</span>
+          <span className="now-time">{hm}</span>
+          <span className="now-dot" />
+          <span className="now-rule" />
         </li>
       ),
     }
@@ -199,6 +201,7 @@ export function DayView({ store, onSignOut }: { store: Store; onSignOut?: () => 
 
   const item = (withTimeOverdue: boolean) => (t: Task, h?: Parameters<typeof TaskItem>[0]['handle']) => (
     <TaskItem
+      variant={withTimeOverdue ? 'timeline' : 'card'}
       task={t}
       handle={h}
       overdue={withTimeOverdue && isOverdue(t, now)}
@@ -210,30 +213,47 @@ export function DayView({ store, onSignOut }: { store: Store; onSignOut?: () => 
   return (
     <div className="app">
       <header className="top">
-        <div className="date-nav">
-          <button className="ghost" onClick={() => setDate(addDays(date, -1))} aria-label="前の日">
-            ‹
-          </button>
-          <button className="date-label" onClick={() => setView('calendar')}>
-            <span className="date-main">{formatJP(date)}</span>
-            <span className="date-sub">{date === today ? '今日' : date < today ? '過去' : '予定'}</span>
-          </button>
-          <button className="ghost" onClick={() => setDate(addDays(date, 1))} aria-label="次の日">
-            ›
-          </button>
-          {date !== today && (
-            <button className="ghost small" onClick={() => setDate(today)}>
-              今日へ
-            </button>
-          )}
-          <span className="spacer" />
-          {onSignOut && (
-            <button className="ghost small" onClick={onSignOut}>
-              ログアウト
-            </button>
-          )}
+        <div className="top-row">
+          <div className="date-block">
+            <span className="eyebrow">
+              {date === today ? 'TODAY' : date < today ? 'PAST' : 'UPCOMING'} · {date.slice(0, 4)}
+            </span>
+            <div className="date-line">
+              <button className="icon-btn" onClick={() => setDate(addDays(date, -1))} aria-label="前の日">
+                <Chevron dir="left" />
+              </button>
+              <button className="date-label" onClick={() => setView('calendar')}>
+                {Number(date.slice(5, 7))}月{Number(date.slice(8))}日<small>（{weekday(date)}）</small>
+              </button>
+              <button className="icon-btn" onClick={() => setDate(addDays(date, 1))} aria-label="次の日">
+                <Chevron dir="right" />
+              </button>
+            </div>
+          </div>
+          <div className="top-actions">
+            {date !== today && (
+              <button className="pill-btn" onClick={() => setDate(today)}>
+                今日へ
+              </button>
+            )}
+            {onSignOut && (
+              <button className="text-btn" onClick={onSignOut}>
+                ログアウト
+              </button>
+            )}
+          </div>
         </div>
-        <nav className="tabs" role="tablist">
+        {tasks.length > 0 && (
+          <div className="progress" aria-label={`${tasks.length - remaining.length} / ${tasks.length} 完了`}>
+            <div className="progress-bar">
+              <span style={{ width: `${((tasks.length - remaining.length) / tasks.length) * 100}%` }} />
+            </div>
+            <span className="progress-text">
+              {tasks.length - remaining.length}/{tasks.length}
+            </span>
+          </div>
+        )}
+        <nav className="seg" role="tablist">
           {(
             [
               ['time', '時間順'],
@@ -241,7 +261,7 @@ export function DayView({ store, onSignOut }: { store: Store; onSignOut?: () => 
               ['calendar', 'カレンダー'],
             ] as const
           ).map(([v, label]) => (
-            <button key={v} role="tab" aria-selected={view === v} className={view === v ? 'tab on' : 'tab'} onClick={() => setView(v)}>
+            <button key={v} role="tab" aria-selected={view === v} className={view === v ? 'seg-btn on' : 'seg-btn'} onClick={() => setView(v)}>
               {label}
               {v === 'list' && remaining.length > 0 && <span className="count">{remaining.length}</span>}
               {v === 'time' && overdueCount > 0 && <span className="count warn">{overdueCount}</span>}
@@ -277,7 +297,7 @@ export function DayView({ store, onSignOut }: { store: Store; onSignOut?: () => 
                 onClose={() => setRecOpen(false)}
               />
             ) : (
-              <button className="ghost small open-rec" onClick={() => setRecOpen(true)}>
+              <button className="text-btn open-rec" onClick={() => setRecOpen(true)}>
                 おすすめから追加
               </button>
             )}
@@ -289,7 +309,7 @@ export function DayView({ store, onSignOut }: { store: Store; onSignOut?: () => 
                 {outOfOrder && (
                   <div className="toolbar">
                     <span className="hint">手動で並べ替え中</span>
-                    <button className="ghost small" onClick={sortByTime}>
+                    <button className="pill-btn" onClick={sortByTime}>
                       時間順に並べ直す
                     </button>
                   </div>
@@ -300,6 +320,7 @@ export function DayView({ store, onSignOut }: { store: Store; onSignOut?: () => 
                   onMove={(moved, i) => applyOrder('time_order', reorderUpdates(moved, i, 'time_order'))}
                   renderItem={item(true)}
                   insertBefore={nowLine}
+                  className="timeline"
                 />
               </>
             ) : (
@@ -314,11 +335,11 @@ export function DayView({ store, onSignOut }: { store: Store; onSignOut?: () => 
                 />
                 {doneItems.length > 0 && (
                   <section className="done-section">
-                    <button className="ghost small" onClick={() => setShowDone(!showDone)}>
+                    <button className="text-btn" onClick={() => setShowDone(!showDone)}>
                       完了済み {doneItems.length} 件 {showDone ? '▲' : '▼'}
                     </button>
                     {showDone && (
-                      <ul className="tasks">
+                      <ul className="tasks cards">
                         {doneItems.map((t) => (
                           <li key={t.id} className="row">
                             {item(false)(t)}
@@ -338,5 +359,13 @@ export function DayView({ store, onSignOut }: { store: Store; onSignOut?: () => 
         <EditDialog task={editing} onSave={(p) => saveEdit(editing, p)} onDelete={() => remove(editing)} onClose={() => setEditing(null)} />
       )}
     </div>
+  )
+}
+
+function Chevron({ dir }: { dir: 'left' | 'right' }) {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden>
+      <path d={dir === 'left' ? 'M15 5l-7 7 7 7' : 'M9 5l7 7-7 7'} fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   )
 }

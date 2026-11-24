@@ -34,7 +34,7 @@ export function Recommend({ suggestions, existing, carryOver, onAdd, onClose }: 
       <div className="recommend-head">
         <h2>今日のタスクを登録しましょう</h2>
         {onClose && (
-          <button className="ghost small" onClick={onClose}>
+          <button className="text-btn" onClick={onClose}>
             閉じる
           </button>
         )}
@@ -59,7 +59,7 @@ export function Recommend({ suggestions, existing, carryOver, onAdd, onClose }: 
             ))}
           </div>
           <div className="recommend-actions">
-            <button className="ghost small" onClick={() => setPicked(new Set(list.map((s) => s.title)))}>
+            <button className="text-btn" onClick={() => setPicked(new Set(list.map((s) => s.title)))}>
               全部選ぶ
             </button>
             <button className="primary" disabled={picked.size === 0} onClick={addPicked}>

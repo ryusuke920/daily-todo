@@ -47,7 +47,7 @@ export function EditDialog({ task, onSave, onDelete, onClose }: Props) {
             削除
           </button>
           <span className="spacer" />
-          <button type="button" className="ghost" onClick={onClose}>
+          <button type="button" className="text-btn" onClick={onClose}>
             キャンセル
           </button>
           <button type="submit" className="primary">

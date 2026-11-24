@@ -29,7 +29,7 @@ export function AddTask({ suggestions, onAdd }: Props) {
     <form className="add" onSubmit={submit}>
       <input
         className="add-title"
-        placeholder="タスクを追加"
+        placeholder="新しいタスクを追加"
         value={title}
         list="task-suggestions"
         onChange={(e) => onTitle(e.target.value)}
@@ -41,8 +41,10 @@ export function AddTask({ suggestions, onAdd }: Props) {
         ))}
       </datalist>
       <input className="add-time" type="time" value={time} onChange={(e) => setTime(e.target.value)} aria-label="時刻" />
-      <button className="primary" type="submit" disabled={!title.trim()}>
-        追加
+      <button className="add-btn" type="submit" disabled={!title.trim()} aria-label="追加">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden>
+          <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+        </svg>
       </button>
     </form>
   )
