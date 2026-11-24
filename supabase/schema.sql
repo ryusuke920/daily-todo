@@ -22,3 +22,6 @@ create policy "own tasks" on public.tasks
   for all
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
+
+-- ログインユーザーが API 経由でテーブルを操作できるように権限を付与（行の制限は上の RLS で行う）
+grant select, insert, update, delete on public.tasks to authenticated;
